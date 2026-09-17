@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --seashell: #fff4eb;
+  --wheat: #f6e0b6;
+  --powder: #a6bcc9;
+  --french: #3e4b8e;
+  --midnight: #3d1534;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, #a6bcc9 0%, transparent 40%),
+    radial-gradient(circle at top right, #f6e0b6 0%, transparent 35%),
+    #fff4eb;
+  color: #3d1534;
+}
+
+::selection {
+  background: #f6e0b6;
+}
