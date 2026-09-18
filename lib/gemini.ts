@@ -1,7 +1,26 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { QuizQuestion } from "./types";
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || "gemini-3.5-flash";
+
+function isHighDemandError(error: unknown): boolean {
+  if (!error) return false;
+  const status = (error as { status?: number })?.status;
+  if (status === 503 || status === 429 || status === 504) return true;
+
+  const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  return (
+    msg.includes("503") ||
+    msg.includes("429") ||
+    msg.includes("high demand") ||
+    msg.includes("service unavailable") ||
+    msg.includes("temporarily unavailable") ||
+    msg.includes("overloaded") ||
+    msg.includes("resource_exhausted") ||
+    msg.includes("spikes in demand")
+  );
+}
 
 type GeminiPayload = {
   title?: string;
@@ -70,13 +89,6 @@ export async function generateQuizFromPdf(pdfBytes: Buffer, questionCount: numbe
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: MODEL,
-    generationConfig: {
-      temperature: 0.4,
-      responseMimeType: "application/json",
-    },
-  });
 
   const prompt = `You create quizzes for college students from study notes.
 
@@ -102,17 +114,57 @@ Rules:
 - Use only facts from the PDF. Do not invent material that is not in the document.
 - Keep prompts clear and friendly for young students.`;
 
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType: "application/pdf",
-        data: pdfBytes.toString("base64"),
-      },
-    },
-    { text: prompt },
-  ]);
+  const modelsToTry = Array.from(new Set([PRIMARY_MODEL, FALLBACK_MODEL].filter(Boolean)));
+  let text = "";
+  let lastError: unknown = null;
 
-  const text = result.response.text();
+  for (let i = 0; i < modelsToTry.length; i++) {
+    const currentModel = modelsToTry[i];
+    try {
+      const model = genAI.getGenerativeModel({
+        model: currentModel,
+        generationConfig: {
+          temperature: 0.4,
+          responseMimeType: "application/json",
+        },
+      });
+
+      const result = await model.generateContent([
+        {
+          inlineData: {
+            mimeType: "application/pdf",
+            data: pdfBytes.toString("base64"),
+          },
+        },
+        { text: prompt },
+      ]);
+
+      text = result.response.text();
+      if (i > 0) {
+        console.info(
+          `[Gemini] High demand on primary model. Successfully generated quiz using fallback model: ${currentModel}`,
+        );
+      }
+      break;
+    } catch (err) {
+      lastError = err;
+      const isDemand = isHighDemandError(err);
+      const hasNext = i < modelsToTry.length - 1;
+
+      if (isDemand && hasNext) {
+        const nextModel = modelsToTry[i + 1];
+        console.warn(
+          `[Gemini] Model ${currentModel} is experiencing high demand (503/429). Automatically switching to ${nextModel}...`,
+        );
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  if (!text && lastError) {
+    throw lastError;
+  }
   let parsed: GeminiPayload;
   try {
     parsed = JSON.parse(text) as GeminiPayload;

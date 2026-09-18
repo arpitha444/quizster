@@ -2,17 +2,23 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/Button";
-import { useAuth } from "@/lib/auth-context";
+import { formatAuthError, useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
-  const { signIn, signInGoogle, configured } = useAuth();
+  const { signIn, signInGoogle, configured, user, loading } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/home");
+    }
+  }, [user, loading, router]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -22,7 +28,21 @@ export default function LoginPage() {
       await signIn(email, password);
       router.push("/home");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not log in.");
+      setError(formatAuthError(err, "Could not log in."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onGoogleSignIn() {
+    setBusy(true);
+    setError("");
+    try {
+      await signInGoogle();
+      router.push("/home");
+    } catch (err) {
+      const msg = formatAuthError(err, "Google sign-in failed.");
+      if (msg) setError(msg);
     } finally {
       setBusy(false);
     }
@@ -44,15 +64,25 @@ export default function LoginPage() {
           onChange={(event) => setEmail(event.target.value)}
           className="w-full rounded-2xl border-2 border-midnight/10 bg-seashell px-4 py-3 font-bold outline-none focus:border-french"
         />
-        <input
-          type="password"
-          required
-          minLength={6}
-          placeholder="Password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded-2xl border-2 border-midnight/10 bg-seashell px-4 py-3 font-bold outline-none focus:border-french"
-        />
+        <div>
+          <input
+            type="password"
+            required
+            minLength={6}
+            placeholder="Password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="w-full rounded-2xl border-2 border-midnight/10 bg-seashell px-4 py-3 font-bold outline-none focus:border-french"
+          />
+          <div className="mt-1.5 flex justify-end">
+            <Link
+              href={email ? `/forgot-password?email=${encodeURIComponent(email)}` : "/forgot-password"}
+              className="text-xs font-bold text-french hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </div>
         {error ? <p className="text-sm font-bold text-red-700">{error}</p> : null}
         <Button type="submit" className="w-full" disabled={busy || !configured}>
           {busy ? "Logging in…" : "Log in"}
@@ -63,18 +93,7 @@ export default function LoginPage() {
         variant="wheat"
         className="mt-3 w-full"
         disabled={!configured || busy}
-        onClick={async () => {
-          setBusy(true);
-          setError("");
-          try {
-            await signInGoogle();
-            router.push("/home");
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "Google sign-in failed.");
-          } finally {
-            setBusy(false);
-          }
-        }}
+        onClick={onGoogleSignIn}
       >
         Continue with Google
       </Button>

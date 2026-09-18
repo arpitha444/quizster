@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Button } from "@/components/Button";
-import { QuestionPreview } from "@/components/QuestionPreview";
 import { useAuth } from "@/lib/auth-context";
 import { createRoom, getQuiz, joinRoom } from "@/lib/rooms";
 import type { QuizDoc } from "@/lib/types";
@@ -58,22 +58,86 @@ function QuizInner() {
     return <p className="py-12 text-center font-bold text-midnight/70">Loading quiz…</p>;
   }
 
+  const mcqCount = quiz.questions.filter((q) => q.type === "mcq").length;
+  const tfCount = quiz.questions.filter((q) => q.type === "tf").length;
+  const blankCount = quiz.questions.filter((q) => q.type === "blank").length;
+
   return (
-    <div className="space-y-6">
-      <div className="rounded-[2rem] bg-white p-6 shadow-card">
-        <h1 className="text-3xl font-black text-midnight">{quiz.title}</h1>
-        <p className="mt-2 font-semibold text-midnight/70">{quiz.questionCount} questions · answers highlighted for the host</p>
-        {error ? <p className="mt-3 text-sm font-bold text-red-700">{error}</p> : null}
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Button disabled={busy} onClick={() => void hostOrSolo(false)}>
-            Host a room
-          </Button>
-          <Button variant="wheat" disabled={busy} onClick={() => void hostOrSolo(true)}>
-            Play solo
-          </Button>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <Link
+        href="/home"
+        className="inline-flex items-center gap-1.5 text-sm font-black text-french hover:underline"
+      >
+        ← Back to quizzes
+      </Link>
+
+      <div className="rounded-[2rem] bg-white p-8 shadow-card">
+        <div className="inline-flex items-center gap-2 rounded-full bg-wheat px-4 py-1 text-xs font-black uppercase tracking-wider text-midnight">
+          <span>Quiz Ready</span>
+          <span>•</span>
+          <span>{quiz.questionCount} Questions</span>
+        </div>
+
+        <h1 className="mt-4 text-3xl font-black text-midnight sm:text-4xl">{quiz.title}</h1>
+        <p className="mt-2 text-base font-semibold text-midnight/70">
+          Generated from your uploaded notes. Choose how you want to race!
+        </p>
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          {mcqCount > 0 ? (
+            <span className="rounded-2xl border-2 border-midnight/10 bg-seashell px-3 py-1.5 text-xs font-bold text-midnight">
+              {mcqCount} Multiple Choice
+            </span>
+          ) : null}
+          {tfCount > 0 ? (
+            <span className="rounded-2xl border-2 border-midnight/10 bg-seashell px-3 py-1.5 text-xs font-bold text-midnight">
+              {tfCount} True / False
+            </span>
+          ) : null}
+          {blankCount > 0 ? (
+            <span className="rounded-2xl border-2 border-midnight/10 bg-seashell px-3 py-1.5 text-xs font-bold text-midnight">
+              {blankCount} Fill in the blank
+            </span>
+          ) : null}
+        </div>
+
+        {error ? <p className="mt-4 text-sm font-bold text-red-700">{error}</p> : null}
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col justify-between rounded-2xl border-2 border-french/20 bg-french/5 p-5">
+            <div>
+              <h2 className="text-lg font-black text-midnight">Multiplayer Race</h2>
+              <p className="mt-1 text-xs font-semibold text-midnight/70">
+                Get a 6-letter room code. All participants join and start together once you begin.
+              </p>
+            </div>
+            <Button
+              className="mt-4 w-full"
+              disabled={busy}
+              onClick={() => void hostOrSolo(false)}
+            >
+              {busy ? "Starting…" : "Host a room"}
+            </Button>
+          </div>
+
+          <div className="flex flex-col justify-between rounded-2xl border-2 border-wheat bg-wheat/20 p-5">
+            <div>
+              <h2 className="text-lg font-black text-midnight">Solo Practice</h2>
+              <p className="mt-1 text-xs font-semibold text-midnight/70">
+                Jump right in solo against the clock. Time-weighted active recall practice.
+              </p>
+            </div>
+            <Button
+              variant="wheat"
+              className="mt-4 w-full"
+              disabled={busy}
+              onClick={() => void hostOrSolo(true)}
+            >
+              {busy ? "Starting…" : "Play solo"}
+            </Button>
+          </div>
         </div>
       </div>
-      <QuestionPreview questions={quiz.questions} />
     </div>
   );
 }

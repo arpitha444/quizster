@@ -12,6 +12,11 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "Quizster",
   description: "Turn PDFs into live quiz races with friends.",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

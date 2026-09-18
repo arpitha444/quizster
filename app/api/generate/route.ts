@@ -25,7 +25,10 @@ export async function POST(request: NextRequest) {
     const quiz = await generateQuizFromPdf(bytes, count);
     return NextResponse.json(quiz);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Quiz generation failed.";
+    let message = error instanceof Error ? error.message : "Quiz generation failed.";
+    if (message.includes("503") || message.includes("high demand") || message.includes("Service Unavailable")) {
+      message = "Gemini servers are currently experiencing high demand. Please wait a moment and try again.";
+    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

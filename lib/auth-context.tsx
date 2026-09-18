@@ -5,6 +5,7 @@ import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -21,21 +22,26 @@ type AuthContextValue = {
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInGoogle: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 async function upsertUser(user: User) {
-  await setDoc(
-    doc(getFirebaseDb(), "users", user.uid),
-    {
-      email: user.email,
-      displayName: user.displayName || user.email?.split("@")[0] || "Player",
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true },
-  );
+  try {
+    await setDoc(
+      doc(getFirebaseDb(), "users", user.uid),
+      {
+        email: user.email,
+        displayName: user.displayName || user.email?.split("@")[0] || "Player",
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  } catch (err) {
+    console.warn("Could not sync user profile to Firestore:", err);
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -69,8 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await upsertUser(credential.user);
       },
       async signInGoogle() {
-        const credential = await signInWithPopup(getFirebaseAuth(), new GoogleAuthProvider());
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        const credential = await signInWithPopup(getFirebaseAuth(), provider);
         await upsertUser(credential.user);
+      },
+      async resetPassword(email) {
+        await sendPasswordResetEmail(getFirebaseAuth(), email.trim().toLowerCase());
       },
       async logout() {
         await signOut(getFirebaseAuth());
@@ -80,6 +91,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function formatAuthError(err: unknown, fallback = "An error occurred."): string {
+  const code = (err as { code?: string })?.code;
+  switch (code) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Incorrect email or password. Please try again.";
+    case "auth/email-already-in-use":
+      return "An account with this email already exists.";
+    case "auth/weak-password":
+      return "Password should be at least 6 characters.";
+    case "auth/invalid-email":
+      return "Please enter a valid email address.";
+    case "auth/popup-closed-by-user":
+    case "auth/cancelled-popup-request":
+      return "";
+    case "auth/popup-blocked":
+      return "Pop-up was blocked by your browser. Please allow pop-ups for this site.";
+    case "auth/unauthorized-domain":
+      return "Domain not authorized in Firebase Console (Authentication > Settings > Authorized Domains).";
+    case "auth/too-many-requests":
+      return "Too many attempts. Please wait a moment and try again.";
+    default:
+      return err instanceof Error ? err.message : fallback;
+  }
 }
 
 export function useAuth() {

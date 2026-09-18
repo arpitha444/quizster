@@ -2,18 +2,24 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/Button";
-import { useAuth } from "@/lib/auth-context";
+import { formatAuthError, useAuth } from "@/lib/auth-context";
 
 export default function SignupPage() {
-  const { signUp, signInGoogle, configured } = useAuth();
+  const { signUp, signInGoogle, configured, user, loading } = useAuth();
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/home");
+    }
+  }, [user, loading, router]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -23,7 +29,21 @@ export default function SignupPage() {
       await signUp(email, password, displayName);
       router.push("/home");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create account.");
+      setError(formatAuthError(err, "Could not create account."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onGoogleSignIn() {
+    setBusy(true);
+    setError("");
+    try {
+      await signInGoogle();
+      router.push("/home");
+    } catch (err) {
+      const msg = formatAuthError(err, "Google sign-in failed.");
+      if (msg) setError(msg);
     } finally {
       setBusy(false);
     }
@@ -68,18 +88,7 @@ export default function SignupPage() {
         variant="wheat"
         className="mt-3 w-full"
         disabled={!configured || busy}
-        onClick={async () => {
-          setBusy(true);
-          setError("");
-          try {
-            await signInGoogle();
-            router.push("/home");
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "Google sign-in failed.");
-          } finally {
-            setBusy(false);
-          }
-        }}
+        onClick={onGoogleSignIn}
       >
         Continue with Google
       </Button>

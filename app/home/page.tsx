@@ -50,15 +50,32 @@ function HomeInner() {
     router.push(`/room/${room.code}`);
   }
 
+  const displayName = user?.displayName || user?.email?.split("@")[0] || "Player";
+
   return (
-    <div className="space-y-8">
-      <section className="rounded-[2rem] bg-white p-8 shadow-card">
-        <h1 className="text-3xl font-black text-midnight">Ready to race?</h1>
-        <p className="mt-2 font-semibold text-midnight/70">
-          Upload notes to mint a quiz, or hop into a friend’s room.
+    <div className="space-y-7">
+      {/* Welcome Greeting */}
+      <div className="space-y-1.5 pt-1">
+        <h1 className="text-3xl font-black tracking-tight text-midnight sm:text-4xl">
+          Welcome back, <span className="text-french">{displayName}</span>
+        </h1>
+        <p className="text-base font-normal text-midnight/70 sm:text-lg">
+          What would you like to be quizzed on today?
         </p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Link href="/create" className="rounded-full bg-french px-6 py-3 text-center font-extrabold text-white shadow-bubble">
+      </div>
+
+      <section className="rounded-[2rem] bg-white p-8 shadow-card">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-midnight">Ready to race?</h2>
+            <p className="mt-1 font-semibold text-midnight/70">
+              Upload notes to mint a quiz, or hop into a friend’s room.
+            </p>
+          </div>
+          <Link
+            href="/create"
+            className="inline-flex items-center justify-center rounded-full bg-french px-6 py-3 font-extrabold text-white shadow-bubble transition hover:-translate-y-0.5 active:translate-y-0"
+          >
             Upload a PDF
           </Link>
         </div>
