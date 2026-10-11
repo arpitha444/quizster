@@ -7,7 +7,9 @@ import { AuthGuard } from "@/components/AuthGuard";
 import { QuestionReview } from "@/components/QuestionReview";
 import { ResultsPodium } from "@/components/ResultsPodium";
 import { useAuth } from "@/lib/auth-context";
+import { rankPlayers } from "@/lib/scoring";
 import { useRoomByCode } from "@/lib/use-room";
+import { recordGroupQuizFinish } from "@/lib/user-profile";
 
 export default function ResultsPage() {
   return (
@@ -27,6 +29,28 @@ function ResultsInner() {
     if (!room) return;
     if (room.status === "lobby") router.replace(`/room/${room.code}`);
   }, [room, router]);
+
+  useEffect(() => {
+    if (!room || !user) return;
+    // Only record for multiplayer rooms with 2 or more players
+    if (room.solo || players.length < 2) return;
+
+    // Check if every player has finished
+    const allFinished = players.length > 0 && players.every((p) => Boolean(p.finishedAt));
+    if (!allFinished) return;
+
+    const finishedPlayers = players.filter((p) => Boolean(p.finishedAt));
+    const ranked = rankPlayers(finishedPlayers);
+    const myRank = ranked.findIndex((p) => p.id === user.uid) + 1;
+    if (myRank > 0) {
+      void recordGroupQuizFinish({
+        uid: user.uid,
+        roomId: room.id,
+        rank: myRank,
+        totalPlayers: players.length,
+      });
+    }
+  }, [players, room, user]);
 
   if (loading || !room) {
     return <p className="py-12 text-center font-bold">{error || "Loading results…"}</p>;

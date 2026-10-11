@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { Header } from "@/components/Header";
+import { ProfileModalProvider } from "@/components/ProfileModalProvider";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -24,8 +25,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${nunito.className} min-h-screen antialiased`}>
         <AuthProvider>
-          <Header />
-          <main className="mx-auto w-full max-w-5xl px-4 pb-16">{children}</main>
+          <ProfileModalProvider>
+            <Header />
+            <main className="mx-auto w-full max-w-5xl px-4 pb-16">{children}</main>
+          </ProfileModalProvider>
         </AuthProvider>
       </body>
     </html>

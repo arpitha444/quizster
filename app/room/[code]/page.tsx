@@ -3,8 +3,10 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
+import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/auth-context";
+import { useProfileModal } from "@/components/ProfileModalProvider";
 import { joinRoom, startRoom } from "@/lib/rooms";
 import { useRoomByCode } from "@/lib/use-room";
 
@@ -18,7 +20,8 @@ export default function LobbyPage() {
 
 function LobbyInner() {
   const params = useParams<{ code: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const { openProfile } = useProfileModal();
   const router = useRouter();
   const { room, players, error, loading } = useRoomByCode(params.code);
 
@@ -26,9 +29,15 @@ function LobbyInner() {
     if (!user || !room) return;
     const already = players.some((player) => player.id === user.uid);
     if (!already) {
-      void joinRoom(room.id, user.uid, user.displayName || "Player", room.hostId === user.uid);
+      void joinRoom(
+        room.id,
+        user.uid,
+        profile?.displayName || user.displayName || "Player",
+        room.hostId === user.uid,
+        profile?.avatarId || "yellow",
+      );
     }
-  }, [players, room, user]);
+  }, [players, profile, room, user]);
 
   useEffect(() => {
     if (!room || !user) return;
@@ -61,15 +70,45 @@ function LobbyInner() {
         )}
       </div>
       <div className="rounded-[2rem] bg-white p-6 shadow-card">
-        <h2 className="font-black text-midnight">Players ({players.length})</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-black text-midnight text-lg">Players ({players.length})</h2>
+          <span className="text-xs font-bold text-midnight/50">Click any racer to view profile</span>
+        </div>
         {players.length === 0 ? (
           <p className="mt-3 font-bold text-midnight/60">No one has joined yet.</p>
         ) : (
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
             {players.map((player) => (
-              <li key={player.id} className="rounded-2xl bg-seashell px-4 py-3 font-extrabold text-midnight">
-                {player.displayName}
-                {player.isHost ? <span className="ml-2 text-sm text-french">host</span> : null}
+              <li key={player.id}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    openProfile(player.id, {
+                      name: player.displayName,
+                      avatarId: player.avatarId,
+                    })
+                  }
+                  className="group flex w-full items-center justify-between rounded-2xl bg-seashell px-4 py-3 font-extrabold text-midnight transition hover:-translate-y-0.5 hover:bg-wheat/70 hover:shadow-sm active:translate-y-0 text-left border border-midnight/5"
+                  title="Click to view racer profile"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar id={player.avatarId} size="sm" showRing />
+                    <span className="truncate">{player.displayName}</span>
+                    {player.id === user?.uid ? (
+                      <span className="rounded-full bg-french/15 px-2 py-0.5 text-[10px] font-black text-french">
+                        you
+                      </span>
+                    ) : null}
+                    {player.isHost ? (
+                      <span className="rounded-full bg-wheat px-2 py-0.5 text-[10px] font-black text-midnight">
+                        host
+                      </span>
+                    ) : null}
+                  </div>
+                  <span className="text-xs font-black text-french opacity-0 group-hover:opacity-100 transition-opacity">
+                    Profile →
+                  </span>
+                </button>
               </li>
             ))}
           </ul>

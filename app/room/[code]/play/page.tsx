@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { formatElapsed, scoreQuiz } from "@/lib/scoring";
 import { submitRun } from "@/lib/rooms";
 import { useRoomByCode } from "@/lib/use-room";
+import { recordQuizSubmission } from "@/lib/user-profile";
 
 export default function PlayPage() {
   return (
@@ -73,6 +74,15 @@ function PlayInner() {
           if (!user) return;
           setSubmitting(true);
           const { score } = scoreQuiz(quiz.questions, answers);
+          try {
+            await recordQuizSubmission({
+              uid: user.uid,
+              questions: quiz.questions,
+              answers,
+            });
+          } catch (e) {
+            console.warn("Could not record streak:", e);
+          }
           await submitRun(room.id, user.uid, { answers, score });
           router.push(`/room/${room.code}/results`);
         }}

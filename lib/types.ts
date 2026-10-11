@@ -1,3 +1,5 @@
+import type { AvatarId } from "./avatars";
+
 export type QuestionType = "mcq" | "tf" | "blank";
 
 export type QuizQuestion = {
@@ -33,7 +35,25 @@ export type PlayerDoc = {
   displayName: string;
   joinedAt: number;
   isHost: boolean;
+  avatarId?: string;
   answers?: Record<string, string>;
   score?: number;
   finishedAt?: number | null;
 };
+
+export type UserProfile = {
+  uid: string;
+  displayName: string;
+  email?: string;
+  bio?: string;
+  avatarId: AvatarId;
+  correctStreak: number;
+  bestCorrectStreak: number;
+  groupWinStreak: number;
+  bestGroupWinStreak: number;
+  totalGroupWins: number;
+  totalQuizzesPlayed: number;
+  processedRooms?: string[];
+  updatedAt?: number;
+};
+

@@ -19,7 +19,7 @@ export default function QuizPage() {
 
 function QuizInner() {
   const params = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const router = useRouter();
   const [quiz, setQuiz] = useState<(QuizDoc & { id: string }) | null>(null);
   const [error, setError] = useState("");
@@ -43,7 +43,13 @@ function QuizInner() {
         title: quiz.title,
         solo,
       });
-      await joinRoom(room.roomId, user.uid, user.displayName || "Host", true);
+      await joinRoom(
+        room.roomId,
+        user.uid,
+        profile?.displayName || user.displayName || "Host",
+        true,
+        profile?.avatarId || "yellow",
+      );
       router.push(solo ? `/room/${room.code}/play` : `/room/${room.code}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start.");

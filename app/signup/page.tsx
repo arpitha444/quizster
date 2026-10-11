@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
+import { AVATAR_OPTIONS, type AvatarId } from "@/lib/avatars";
 import { formatAuthError, useAuth } from "@/lib/auth-context";
 
 export default function SignupPage() {
@@ -12,6 +14,7 @@ export default function SignupPage() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedAvatarId, setSelectedAvatarId] = useState<AvatarId>("yellow");
   const [code, setCode] = useState("");
   const [verificationToken, setVerificationToken] = useState("");
   const [step, setStep] = useState<"form" | "verify">("form");
@@ -96,7 +99,7 @@ export default function SignupPage() {
         throw new Error(verifyData.error || "Invalid verification code.");
       }
 
-      await signUp(email.trim().toLowerCase(), password, displayName.trim());
+      await signUp(email.trim().toLowerCase(), password, displayName.trim(), selectedAvatarId);
       router.push("/home");
     } catch (err) {
       setError(formatAuthError(err, "Could not create account."));
@@ -208,6 +211,35 @@ export default function SignupPage() {
                 >
                   {hasNumber ? "✓" : "•"} Numbers
                 </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-midnight/70 mb-2">
+                Choose your avatar
+              </label>
+              <div className="grid grid-cols-5 gap-2">
+                {AVATAR_OPTIONS.map((opt) => {
+                  const selected = selectedAvatarId === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setSelectedAvatarId(opt.id)}
+                      className={`flex flex-col items-center rounded-2xl p-2 transition-all ${
+                        selected
+                          ? "bg-wheat/70 ring-2 ring-french scale-105 shadow-sm"
+                          : "bg-seashell hover:bg-wheat/30 active:scale-95"
+                      }`}
+                      title={opt.name}
+                    >
+                      <Avatar id={opt.id} size="sm" />
+                      <span className="mt-1 truncate text-[10px] font-black text-midnight">
+                        {opt.name.split(" ")[0]}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

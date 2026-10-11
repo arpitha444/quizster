@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
+import { Avatar } from "@/components/Avatar";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/auth-context";
+import { useProfileModal } from "@/components/ProfileModalProvider";
 import { findRoomByCode, joinRoom, listMyQuizzes } from "@/lib/rooms";
 import type { QuizDoc } from "@/lib/types";
 
@@ -18,7 +20,8 @@ export default function HomePage() {
 }
 
 function HomeInner() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const { openProfile } = useProfileModal();
   const router = useRouter();
   const [code, setCode] = useState("");
   const [joinError, setJoinError] = useState("");
@@ -46,22 +49,80 @@ function HomeInner() {
       setJoinError("That race already ended.");
       return;
     }
-    await joinRoom(room.id, user.uid, user.displayName || user.email?.split("@")[0] || "Player", room.hostId === user.uid);
+    await joinRoom(
+      room.id,
+      user.uid,
+      profile?.displayName || user.displayName || user.email?.split("@")[0] || "Player",
+      room.hostId === user.uid,
+      profile?.avatarId || "yellow",
+    );
     router.push(`/room/${room.code}`);
   }
 
-  const displayName = user?.displayName || user?.email?.split("@")[0] || "Player";
+  const displayName = profile?.displayName || user?.displayName || user?.email?.split("@")[0] || "Player";
 
   return (
     <div className="space-y-7">
-      {/* Welcome Greeting */}
-      <div className="space-y-1.5 pt-1">
-        <h1 className="text-3xl font-black tracking-tight text-midnight sm:text-4xl">
-          Welcome back, <span className="text-french">{displayName}</span>
-        </h1>
-        <p className="text-base font-normal text-midnight/70 sm:text-lg">
-          What would you like to be quizzed on today?
-        </p>
+      {/* Welcome Greeting & Streaks Bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pt-1">
+        <div className="flex items-center gap-3.5">
+          <button
+            type="button"
+            onClick={() => user && openProfile(user.uid)}
+            className="group relative cursor-pointer transition hover:scale-105 active:scale-95"
+            title="Click to view and edit your profile"
+          >
+            <Avatar id={profile?.avatarId || "yellow"} size="lg" showRing />
+            <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-french text-[10px] font-black text-white shadow-sm">
+              ✎
+            </span>
+          </button>
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-midnight sm:text-4xl">
+              Welcome back, <span className="text-french">{displayName}</span>
+            </h1>
+            <p className="text-sm font-semibold text-midnight/70 sm:text-base">
+              Ready to test your knowledge today?
+            </p>
+          </div>
+        </div>
+
+        {/* Streak Badges */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => user && openProfile(user.uid)}
+            className="flex items-center gap-2 rounded-2xl border-2 border-amber-300 bg-amber-50 px-3.5 py-2 transition hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0"
+            title="View correct answer streak"
+          >
+            <span className="text-lg">🔥</span>
+            <div className="text-left">
+              <p className="text-[10px] font-black uppercase tracking-wider text-amber-800/70 leading-none">
+                Streak
+              </p>
+              <p className="text-base font-black text-amber-900 leading-tight">
+                {profile?.correctStreak ?? 0}
+              </p>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => user && openProfile(user.uid)}
+            className="flex items-center gap-2 rounded-2xl border-2 border-french/25 bg-french/5 px-3.5 py-2 transition hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0"
+            title="View group quiz win streak"
+          >
+            <span className="text-lg">🏆</span>
+            <div className="text-left">
+              <p className="text-[10px] font-black uppercase tracking-wider text-french/70 leading-none">
+                Group Wins
+              </p>
+              <p className="text-base font-black text-french leading-tight">
+                {profile?.groupWinStreak ?? 0}
+              </p>
+            </div>
+          </button>
+        </div>
       </div>
 
       <section className="rounded-[2rem] bg-white p-8 shadow-card">

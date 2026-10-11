@@ -79,11 +79,18 @@ export async function createRoom(params: {
   return { roomId: ref.id, code };
 }
 
-export async function joinRoom(roomId: string, uid: string, displayName: string, isHost: boolean) {
+export async function joinRoom(
+  roomId: string,
+  uid: string,
+  displayName: string,
+  isHost: boolean,
+  avatarId?: string,
+) {
   await setDoc(
     doc(getFirebaseDb(), "rooms", roomId, "players", uid),
     {
       displayName,
+      avatarId: avatarId || "yellow",
       joinedAt: Date.now(),
       isHost,
       finishedAt: null,

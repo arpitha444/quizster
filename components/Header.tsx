@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Avatar } from "@/components/Avatar";
 import { useAuth } from "@/lib/auth-context";
+import { useProfileModal } from "@/components/ProfileModalProvider";
 
 export function Header() {
-  const { user, logout, configured } = useAuth();
+  const { user, profile, logout, configured } = useAuth();
+  const { openProfile } = useProfileModal();
 
   return (
     <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-7 sm:py-8">
@@ -22,9 +25,17 @@ export function Header() {
       <nav className="flex items-center gap-4">
         {configured && user ? (
           <>
-            <span className="hidden text-sm sm:text-base font-bold text-midnight/70 sm:inline">
-              {user.displayName || user.email}
-            </span>
+            <button
+              type="button"
+              onClick={() => openProfile(user.uid)}
+              className="flex items-center gap-2.5 rounded-full bg-white/80 hover:bg-white px-3.5 py-1.5 shadow-card transition hover:-translate-y-0.5 active:translate-y-0 border border-midnight/5"
+              title="View your profile"
+            >
+              <Avatar id={profile?.avatarId || "yellow"} size="sm" showRing />
+              <span className="text-sm sm:text-base font-extrabold text-midnight">
+                {profile?.displayName || user.displayName || user.email?.split("@")[0]}
+              </span>
+            </button>
             <button
               type="button"
               onClick={() => void logout()}
