@@ -52,15 +52,15 @@ function CreateInner() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-black text-midnight">Make a quiz from a PDF</h1>
-        <p className="mt-2 font-semibold text-midnight/70">
+        <h1 className="text-2xl sm:text-3xl font-black text-midnight">Make a quiz from a PDF</h1>
+        <p className="mt-1.5 sm:mt-2 text-sm sm:text-base font-semibold text-midnight/70">
           Gemini Flash reads your notes and writes a mixed set of questions.
         </p>
       </div>
       <PdfDropzone file={file} onFile={setFile} />
-      <div className="rounded-[2rem] bg-white p-6 shadow-card">
+      <div className="rounded-[2rem] bg-white p-5 sm:p-6 shadow-card">
         <label className="font-extrabold text-midnight">
           Number of questions: {count}
           <input

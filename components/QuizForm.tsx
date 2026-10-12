@@ -48,19 +48,19 @@ export function QuizForm({ questions, submitting, onSubmit }: Props) {
                 return (
                   <label
                     key={option}
-                    className={`flex cursor-pointer items-center gap-3 rounded-2xl px-4 py-3 font-bold ${
+                    className={`flex cursor-pointer items-center gap-2.5 sm:gap-3 rounded-xl sm:rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-bold ${
                       selected ? "bg-wheat text-midnight" : "bg-seashell text-midnight/80"
                     }`}
                   >
                     <input
                       type="radio"
-                      className="accent-french"
+                      className="accent-french shrink-0 h-4 w-4"
                       name={question.id}
                       value={option}
                       checked={selected}
                       onChange={() => setAnswers((current) => ({ ...current, [question.id]: option }))}
                     />
-                    {option}
+                    <span className="min-w-0 flex-1 break-words leading-snug">{option}</span>
                   </label>
                 );
               })}

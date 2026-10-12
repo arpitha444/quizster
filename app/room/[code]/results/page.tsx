@@ -59,11 +59,11 @@ function ResultsInner() {
   const myPlayer = players.find((player) => player.id === user?.uid);
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-[2rem] bg-white p-6 text-center shadow-card">
-        <p className="font-extrabold uppercase tracking-widest text-french">Finish line</p>
-        <h1 className="mt-2 text-3xl font-black text-midnight">{room.title}</h1>
-        <p className="mt-2 font-semibold text-midnight/70">Ranked by score, then by who finished first.</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="rounded-[2rem] bg-white p-5 sm:p-6 text-center shadow-card">
+        <p className="font-extrabold uppercase tracking-widest text-french text-xs sm:text-sm">Finish line</p>
+        <h1 className="mt-2 text-2xl sm:text-3xl font-black text-midnight">{room.title}</h1>
+        <p className="mt-1.5 sm:mt-2 text-xs sm:text-base font-semibold text-midnight/70">Ranked by score, then by who finished first.</p>
       </div>
 
       <ResultsPodium players={players} startedAt={room.startedAt} currentUid={user?.uid} />

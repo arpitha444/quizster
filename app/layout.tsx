@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
@@ -9,6 +9,12 @@ const nunito = Nunito({
   subsets: ["latin"],
   weight: ["600", "800", "900"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Quizster",
@@ -27,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <ProfileModalProvider>
             <Header />
-            <main className="mx-auto w-full max-w-5xl px-4 pb-16">{children}</main>
+            <main className="mx-auto w-full max-w-5xl px-3 sm:px-4 pb-16">{children}</main>
           </ProfileModalProvider>
         </AuthProvider>
       </body>

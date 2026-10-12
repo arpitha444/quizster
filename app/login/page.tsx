@@ -49,9 +49,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-[2rem] bg-white p-8 shadow-card">
-      <h1 className="text-3xl font-black text-midnight">Welcome back</h1>
-      <p className="mt-2 font-semibold text-midnight/70">Log in to host or join a race.</p>
+    <div className="mx-auto max-w-md rounded-[2rem] bg-white p-5 sm:p-8 shadow-card">
+      <h1 className="text-2xl sm:text-3xl font-black text-midnight">Welcome back</h1>
+      <p className="mt-1.5 sm:mt-2 text-sm sm:text-base font-semibold text-midnight/70">Log in to host or join a race.</p>
       {!configured ? (
         <p className="mt-4 rounded-2xl bg-wheat p-3 text-sm font-bold">Add Firebase keys in .env.local first.</p>
       ) : null}

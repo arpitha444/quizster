@@ -77,15 +77,15 @@ function QuizInner() {
         ← Back to quizzes
       </Link>
 
-      <div className="rounded-[2rem] bg-white p-8 shadow-card">
+      <div className="rounded-[2rem] bg-white p-5 sm:p-8 shadow-card">
         <div className="inline-flex items-center gap-2 rounded-full bg-wheat px-4 py-1 text-xs font-black uppercase tracking-wider text-midnight">
           <span>Quiz Ready</span>
           <span>•</span>
           <span>{quiz.questionCount} Questions</span>
         </div>
 
-        <h1 className="mt-4 text-3xl font-black text-midnight sm:text-4xl">{quiz.title}</h1>
-        <p className="mt-2 text-base font-semibold text-midnight/70">
+        <h1 className="mt-3 sm:mt-4 text-2xl sm:text-4xl font-black text-midnight">{quiz.title}</h1>
+        <p className="mt-2 text-sm sm:text-base font-semibold text-midnight/70">
           Generated from your uploaded notes. Choose how you want to race!
         </p>
 

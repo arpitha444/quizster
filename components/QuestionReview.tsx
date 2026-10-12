@@ -43,37 +43,37 @@ export function QuestionReview({ questions, answers }: Props) {
   return (
     <div className="space-y-6">
       {/* Summary Stat Card */}
-      <div className="rounded-[2rem] bg-white p-6 shadow-card">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-[1.75rem] sm:rounded-[2rem] bg-white p-4 sm:p-6 shadow-card">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-french">Performance Breakdown</p>
-            <h2 className="text-2xl font-black text-midnight">Question-by-Question Review</h2>
-            <p className="text-sm font-semibold text-midnight/70">
+            <p className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-french">Performance Breakdown</p>
+            <h2 className="text-xl sm:text-2xl font-black text-midnight">Question-by-Question Review</h2>
+            <p className="text-xs sm:text-sm font-semibold text-midnight/70">
               See where you gained points and where you missed them.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-4 py-2 text-center">
-              <p className="text-xs font-black uppercase text-emerald-700">Score</p>
-              <p className="text-xl font-black text-emerald-800">
-                {totalScore} <span className="text-xs font-bold text-emerald-600">/ {maxScore}</span>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex-1 sm:flex-initial rounded-xl sm:rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-3 sm:px-4 py-2 text-center">
+              <p className="text-[10px] sm:text-xs font-black uppercase text-emerald-700">Score</p>
+              <p className="text-lg sm:text-xl font-black text-emerald-800">
+                {totalScore} <span className="text-[10px] sm:text-xs font-bold text-emerald-600">/ {maxScore}</span>
               </p>
             </div>
-            <div className="rounded-2xl border-2 border-midnight/10 bg-seashell px-4 py-2 text-center">
-              <p className="text-xs font-black uppercase text-midnight/60">Accuracy</p>
-              <p className="text-xl font-black text-midnight">{percentage}%</p>
+            <div className="flex-1 sm:flex-initial rounded-xl sm:rounded-2xl border-2 border-midnight/10 bg-seashell px-3 sm:px-4 py-2 text-center">
+              <p className="text-[10px] sm:text-xs font-black uppercase text-midnight/60">Accuracy</p>
+              <p className="text-lg sm:text-xl font-black text-midnight">{percentage}%</p>
             </div>
           </div>
         </div>
 
         {/* Filter Chips */}
-        <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-seashell pt-4">
-          <span className="text-xs font-black uppercase text-midnight/50">Filter:</span>
+        <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-1.5 sm:gap-2 border-t border-seashell pt-3 sm:pt-4">
+          <span className="text-[11px] sm:text-xs font-black uppercase text-midnight/50">Filter:</span>
           <button
             type="button"
             onClick={() => setFilter("all")}
-            className={`rounded-full px-4 py-1.5 text-xs font-extrabold transition ${
+            className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
               filter === "all"
                 ? "bg-midnight text-white shadow-sm"
                 : "bg-seashell text-midnight/70 hover:bg-wheat"
@@ -84,7 +84,7 @@ export function QuestionReview({ questions, answers }: Props) {
           <button
             type="button"
             onClick={() => setFilter("correct")}
-            className={`rounded-full px-4 py-1.5 text-xs font-extrabold transition ${
+            className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
               filter === "correct"
                 ? "bg-emerald-600 text-white shadow-sm"
                 : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
@@ -95,7 +95,7 @@ export function QuestionReview({ questions, answers }: Props) {
           <button
             type="button"
             onClick={() => setFilter("incorrect")}
-            className={`rounded-full px-4 py-1.5 text-xs font-extrabold transition ${
+            className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
               filter === "incorrect"
                 ? "bg-rose-600 text-white shadow-sm"
                 : "bg-rose-50 text-rose-800 hover:bg-rose-100"
@@ -107,7 +107,7 @@ export function QuestionReview({ questions, answers }: Props) {
       </div>
 
       {/* Question Review Cards */}
-      <div className="space-y-4">
+      <div className="space-y-3.5 sm:space-y-4">
         {filtered.map(({ question, index, userAnswer, isCorrect, points }) => {
           const typeLabel =
             question.type === "mcq"
@@ -119,22 +119,22 @@ export function QuestionReview({ questions, answers }: Props) {
           return (
             <div
               key={question.id}
-              className={`rounded-[1.75rem] bg-white p-6 shadow-card border-2 transition ${
+              className={`rounded-[1.5rem] sm:rounded-[1.75rem] bg-white p-4 sm:p-6 shadow-card border-2 transition ${
                 isCorrect ? "border-emerald-200" : "border-rose-200"
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-seashell px-3 py-1 text-xs font-black text-midnight/80">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="rounded-full bg-seashell px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-black text-midnight/80">
                     Question #{index + 1}
                   </span>
-                  <span className="rounded-full bg-wheat px-3 py-1 text-xs font-extrabold text-midnight">
+                  <span className="rounded-full bg-wheat px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-extrabold text-midnight">
                     {typeLabel}
                   </span>
                 </div>
 
                 <div
-                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-black ${
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 sm:px-3.5 py-1 text-[11px] sm:text-xs font-black ${
                     isCorrect
                       ? "bg-emerald-100 text-emerald-800"
                       : "bg-rose-100 text-rose-800"
@@ -156,11 +156,11 @@ export function QuestionReview({ questions, answers }: Props) {
                 </div>
               </div>
 
-              <p className="mt-4 text-base font-black text-midnight">{question.prompt}</p>
+              <p className="mt-3 sm:mt-4 text-sm sm:text-base font-black text-midnight leading-snug">{question.prompt}</p>
 
               {/* Multiple Choice / True-False Options */}
               {question.options && question.options.length > 0 ? (
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <div className="mt-3 sm:mt-4 grid gap-2 sm:grid-cols-2">
                   {question.options.map((option) => {
                     const isChosen = userAnswer === option;
                     const isTheCorrectAnswer = option === question.answer;
@@ -171,21 +171,21 @@ export function QuestionReview({ questions, answers }: Props) {
                     if (isChosen && isTheCorrectAnswer) {
                       style = "border-2 border-emerald-500 bg-emerald-50 font-black text-emerald-900";
                       badge = (
-                        <span className="ml-2 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[11px] font-black text-white">
+                        <span className="shrink-0 whitespace-nowrap self-start sm:self-center rounded-full bg-emerald-600 px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-black text-white shadow-xs">
                           ✓ Your Answer (Correct)
                         </span>
                       );
                     } else if (isChosen && !isTheCorrectAnswer) {
                       style = "border-2 border-rose-400 bg-rose-50 font-bold text-rose-900";
                       badge = (
-                        <span className="ml-2 rounded-full bg-rose-600 px-2.5 py-0.5 text-[11px] font-black text-white">
+                        <span className="shrink-0 whitespace-nowrap self-start sm:self-center rounded-full bg-rose-600 px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-black text-white shadow-xs">
                           ✗ Your Answer
                         </span>
                       );
                     } else if (isTheCorrectAnswer) {
                       style = "border-2 border-emerald-400 bg-emerald-50/70 font-bold text-emerald-900";
                       badge = (
-                        <span className="ml-2 rounded-full bg-emerald-500 px-2.5 py-0.5 text-[11px] font-black text-white">
+                        <span className="shrink-0 whitespace-nowrap self-start sm:self-center rounded-full bg-emerald-500 px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-black text-white shadow-xs">
                           ✓ Correct Answer
                         </span>
                       );
@@ -194,9 +194,11 @@ export function QuestionReview({ questions, answers }: Props) {
                     return (
                       <div
                         key={option}
-                        className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm ${style}`}
+                        className={`flex items-start sm:items-center justify-between gap-2 rounded-xl sm:rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm ${style}`}
                       >
-                        <span className="truncate">{option}</span>
+                        <span className="min-w-0 flex-1 break-words font-bold sm:font-extrabold leading-snug">
+                          {option}
+                        </span>
                         {badge}
                       </div>
                     );
@@ -204,23 +206,23 @@ export function QuestionReview({ questions, answers }: Props) {
                 </div>
               ) : (
                 /* Fill in the Blank Review */
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-3">
                   <div
-                    className={`rounded-2xl border-2 p-4 text-sm ${
+                    className={`rounded-xl sm:rounded-2xl border-2 p-3 sm:p-4 text-xs sm:text-sm ${
                       isCorrect
                         ? "border-emerald-400 bg-emerald-50 text-emerald-950"
                         : "border-rose-300 bg-rose-50 text-rose-950"
                     }`}
                   >
-                    <p className="text-xs font-black uppercase text-midnight/60">Your Answer</p>
-                    <p className="mt-1 font-black text-base">
+                    <p className="text-[10px] sm:text-xs font-black uppercase text-midnight/60">Your Answer</p>
+                    <p className="mt-1 font-black text-sm sm:text-base break-words">
                       {userAnswer ? `"${userAnswer}"` : <span className="italic text-midnight/40">(Left blank)</span>}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 text-sm text-emerald-950">
-                    <p className="text-xs font-black uppercase text-emerald-700">Correct Answer</p>
-                    <p className="mt-1 font-black text-base">&quot;{question.answer}&quot;</p>
+                  <div className="rounded-xl sm:rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-3 sm:p-4 text-xs sm:text-sm text-emerald-950">
+                    <p className="text-[10px] sm:text-xs font-black uppercase text-emerald-700">Correct Answer</p>
+                    <p className="mt-1 font-black text-sm sm:text-base break-words">&quot;{question.answer}&quot;</p>
                   </div>
                 </div>
               )}

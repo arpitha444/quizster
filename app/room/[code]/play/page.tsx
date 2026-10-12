@@ -57,13 +57,13 @@ function PlayInner() {
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[2rem] bg-white px-6 py-4 shadow-card">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 rounded-[2rem] bg-white px-4 sm:px-6 py-3 sm:py-4 shadow-card">
         <div>
-          <p className="text-sm font-extrabold uppercase text-french">Race</p>
-          <h1 className="text-2xl font-black text-midnight">{room.title}</h1>
+          <p className="text-xs sm:text-sm font-extrabold uppercase text-french">Race</p>
+          <h1 className="text-xl sm:text-2xl font-black text-midnight">{room.title}</h1>
         </div>
-        <div className="rounded-full bg-wheat px-5 py-2 text-2xl font-black text-midnight">
+        <div className="rounded-full bg-wheat px-3.5 sm:px-5 py-1.5 sm:py-2 text-lg sm:text-2xl font-black text-midnight">
           {formatElapsed(now - startedAt)}
         </div>
       </div>

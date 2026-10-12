@@ -113,7 +113,7 @@ export function UserProfileModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
     >
       {/* Backdrop */}
       <div
@@ -122,19 +122,19 @@ export function UserProfileModal({
       />
 
       {/* Modal Dialog Card */}
-      <div className="relative z-10 flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-[2.5rem] bg-white shadow-card border-4 border-wheat/60">
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-[calc(100vw-1.5rem)] sm:max-w-md flex-col overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] bg-white shadow-card border-3 sm:border-4 border-wheat/60">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close profile"
-          className="absolute right-4 top-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-seashell text-lg font-black text-midnight/70 transition hover:bg-wheat hover:text-midnight active:scale-95 shadow-sm"
+          className="absolute right-3.5 top-3.5 z-20 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-seashell text-base sm:text-lg font-black text-midnight/70 transition hover:bg-wheat hover:text-midnight active:scale-95 shadow-sm"
         >
           ✕
         </button>
 
         {/* Scrollable Inner Area with hidden scrollbar */}
-        <div className="overflow-y-auto p-5 sm:p-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="overflow-y-auto p-4 sm:p-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {loading ? (
             <div className="py-16 text-center">
               <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-french border-t-transparent" />
@@ -144,7 +144,7 @@ export function UserProfileModal({
           /* =================== EDIT MODE (CURRENT USER ONLY) =================== */
           <div className="space-y-4">
             <div className="text-center">
-              <h2 className="text-2xl font-black text-midnight">Edit Profile</h2>
+              <h2 className="text-xl sm:text-2xl font-black text-midnight">Edit Profile</h2>
               <p className="text-xs sm:text-sm font-semibold text-midnight/60">
                 Customize your racer look and bio
               </p>
@@ -155,7 +155,7 @@ export function UserProfileModal({
               <label className="block text-xs font-black uppercase tracking-wider text-french mb-2">
                 Choose Your Avatar
               </label>
-              <div className="grid grid-cols-5 gap-2 sm:gap-3">
+              <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
                 {AVATAR_OPTIONS.map((option) => {
                   const selected = editAvatarId === option.id;
                   return (
@@ -163,14 +163,14 @@ export function UserProfileModal({
                       key={option.id}
                       type="button"
                       onClick={() => setEditAvatarId(option.id)}
-                      className={`group flex flex-col items-center rounded-2xl p-2 transition-all ${
+                      className={`group flex flex-col items-center rounded-xl sm:rounded-2xl p-1.5 sm:p-2 transition-all ${
                         selected
-                          ? "bg-wheat/70 scale-105 ring-4 ring-french shadow-md"
+                          ? "bg-wheat/70 scale-105 ring-2 sm:ring-4 ring-french shadow-md"
                           : "bg-seashell hover:bg-wheat/40 active:scale-95"
                       }`}
                     >
-                      <Avatar id={option.id} size="md" />
-                      <span className="mt-1 truncate text-[10px] font-black text-midnight">
+                      <Avatar id={option.id} size="sm" />
+                      <span className="mt-1 truncate text-[9px] sm:text-[10px] font-black text-midnight max-w-full">
                         {option.name.split(" ")[0]}
                       </span>
                     </button>
@@ -276,67 +276,67 @@ export function UserProfileModal({
             </div>
 
             {/* Streaks & Stats Grid */}
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
               {/* Correct Answer Streak Card */}
-              <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-3 text-center">
+              <div className="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-2.5 sm:p-3 text-center">
                 <div className="flex items-center justify-center gap-1 text-amber-600">
-                  <span className="text-base">🔥</span>
-                  <span className="text-[11px] font-black uppercase tracking-wider">
+                  <span className="text-sm sm:text-base">🔥</span>
+                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">
                     Correct Streak
                   </span>
                 </div>
-                <p className="mt-0.5 text-2xl font-black text-amber-700">
+                <p className="mt-0.5 text-xl sm:text-2xl font-black text-amber-700">
                   {displayedProfile?.correctStreak ?? 0}
                 </p>
-                <p className="text-[10px] font-bold text-amber-800/70">
+                <p className="text-[9px] sm:text-[10px] font-bold text-amber-800/70">
                   Best streak: {displayedProfile?.bestCorrectStreak ?? 0}
                 </p>
               </div>
 
               {/* Group Quiz Win Streak Card */}
-              <div className="rounded-2xl border-2 border-french/20 bg-french/5 p-3 text-center">
+              <div className="rounded-2xl border-2 border-french/20 bg-french/5 p-2.5 sm:p-3 text-center">
                 <div className="flex items-center justify-center gap-1 text-french">
-                  <span className="text-base">🏆</span>
-                  <span className="text-[11px] font-black uppercase tracking-wider">
+                  <span className="text-sm sm:text-base">🏆</span>
+                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider">
                     Group Win Streak
                   </span>
                 </div>
-                <p className="mt-0.5 text-2xl font-black text-french">
+                <p className="mt-0.5 text-xl sm:text-2xl font-black text-french">
                   {displayedProfile?.groupWinStreak ?? 0}
                 </p>
-                <p className="text-[10px] font-bold text-french/70">
+                <p className="text-[9px] sm:text-[10px] font-bold text-french/70">
                   Best streak: {displayedProfile?.bestGroupWinStreak ?? 0}
                 </p>
               </div>
 
               {/* Total Group Wins */}
-              <div className="rounded-2xl border-2 border-midnight/10 bg-seashell p-2.5 text-center">
+              <div className="rounded-2xl border-2 border-midnight/10 bg-seashell p-2 sm:p-2.5 text-center">
                 <div className="flex items-center justify-center gap-1 text-midnight/80">
-                  <span className="text-sm">🥇</span>
-                  <span className="text-[10px] font-black uppercase tracking-wider">
+                  <span className="text-xs sm:text-sm">🥇</span>
+                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
                     Group Wins
                   </span>
                 </div>
-                <p className="mt-0.5 text-xl font-black text-midnight">
+                <p className="mt-0.5 text-lg sm:text-xl font-black text-midnight">
                   {displayedProfile?.totalGroupWins ?? 0}
                 </p>
-                <p className="text-[10px] font-bold text-midnight/50">
+                <p className="text-[9px] sm:text-[10px] font-bold text-midnight/50">
                   1st place finishes
                 </p>
               </div>
 
               {/* Total Quizzes Played */}
-              <div className="rounded-2xl border-2 border-midnight/10 bg-seashell p-2.5 text-center">
+              <div className="rounded-2xl border-2 border-midnight/10 bg-seashell p-2 sm:p-2.5 text-center">
                 <div className="flex items-center justify-center gap-1 text-midnight/80">
-                  <span className="text-sm">🎮</span>
-                  <span className="text-[10px] font-black uppercase tracking-wider">
+                  <span className="text-xs sm:text-sm">🎮</span>
+                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">
                     Quizzes Played
                   </span>
                 </div>
-                <p className="mt-0.5 text-xl font-black text-midnight">
+                <p className="mt-0.5 text-lg sm:text-xl font-black text-midnight">
                   {displayedProfile?.totalQuizzesPlayed ?? 0}
                 </p>
-                <p className="text-[10px] font-bold text-midnight/50">
+                <p className="text-[9px] sm:text-[10px] font-bold text-midnight/50">
                   Races completed
                 </p>
               </div>

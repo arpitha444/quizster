@@ -51,9 +51,9 @@ function ForgotPasswordForm() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-[2rem] bg-white p-8 shadow-card">
-      <h1 className="text-3xl font-black text-midnight">Reset password</h1>
-      <p className="mt-2 font-semibold text-midnight/70">
+    <div className="mx-auto max-w-md rounded-[2rem] bg-white p-5 sm:p-8 shadow-card">
+      <h1 className="text-2xl sm:text-3xl font-black text-midnight">Reset password</h1>
+      <p className="mt-1.5 sm:mt-2 text-sm sm:text-base font-semibold text-midnight/70">
         Enter your email and we&apos;ll send you a link to update your password.
       </p>
 
