@@ -1,15 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { downloadQuizPdf } from "@/lib/pdf-generator";
 import { isAnswerCorrect } from "@/lib/scoring";
 import type { QuizQuestion } from "@/lib/types";
 
 type Props = {
   questions: QuizQuestion[];
   answers: Record<string, string>;
+  quizTitle?: string;
+  playerName?: string;
 };
 
-export function QuestionReview({ questions, answers }: Props) {
+export function QuestionReview({ questions, answers, quizTitle, playerName }: Props) {
   const [filter, setFilter] = useState<"all" | "correct" | "incorrect">("all");
 
   const results = useMemo(() => {
@@ -40,6 +43,15 @@ export function QuestionReview({ questions, answers }: Props) {
 
   if (questions.length === 0) return null;
 
+  function handleDownloadPdf() {
+    downloadQuizPdf({
+      quizTitle: quizTitle || "Quizster Quiz",
+      playerName: playerName || "Player",
+      questions,
+      answers,
+    });
+  }
+
   return (
     <div className="space-y-6">
       {/* Summary Stat Card */}
@@ -53,7 +65,7 @@ export function QuestionReview({ questions, answers }: Props) {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <div className="flex-1 sm:flex-initial rounded-xl sm:rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-3 sm:px-4 py-2 text-center">
               <p className="text-[10px] sm:text-xs font-black uppercase text-emerald-700">Score</p>
               <p className="text-lg sm:text-xl font-black text-emerald-800">
@@ -67,41 +79,53 @@ export function QuestionReview({ questions, answers }: Props) {
           </div>
         </div>
 
-        {/* Filter Chips */}
-        <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-1.5 sm:gap-2 border-t border-seashell pt-3 sm:pt-4">
-          <span className="text-[11px] sm:text-xs font-black uppercase text-midnight/50">Filter:</span>
+        {/* Filter Chips & Download PDF Button */}
+        <div className="mt-4 sm:mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-seashell pt-3 sm:pt-4">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-[11px] sm:text-xs font-black uppercase text-midnight/50">Filter:</span>
+            <button
+              type="button"
+              onClick={() => setFilter("all")}
+              className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
+                filter === "all"
+                  ? "bg-midnight text-white shadow-sm"
+                  : "bg-seashell text-midnight/70 hover:bg-wheat"
+              }`}
+            >
+              All ({results.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("correct")}
+              className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
+                filter === "correct"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+              }`}
+            >
+              ✓ Correct ({correctCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("incorrect")}
+              className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
+                filter === "incorrect"
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-rose-50 text-rose-800 hover:bg-rose-100"
+              }`}
+            >
+              ✗ Missed ({incorrectCount})
+            </button>
+          </div>
+
           <button
             type="button"
-            onClick={() => setFilter("all")}
-            className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
-              filter === "all"
-                ? "bg-midnight text-white shadow-sm"
-                : "bg-seashell text-midnight/70 hover:bg-wheat"
-            }`}
+            onClick={handleDownloadPdf}
+            className="inline-flex items-center gap-1.5 rounded-full border-2 border-french/25 bg-french/5 px-3.5 py-1.5 text-xs font-black text-french hover:bg-french hover:text-white transition active:scale-95 cursor-pointer shadow-xs"
+            title="Download full quiz study guide as a PDF"
           >
-            All ({results.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilter("correct")}
-            className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
-              filter === "correct"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
-            }`}
-          >
-            ✓ Correct ({correctCount})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilter("incorrect")}
-            className={`rounded-full px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-extrabold transition ${
-              filter === "incorrect"
-                ? "bg-rose-600 text-white shadow-sm"
-                : "bg-rose-50 text-rose-800 hover:bg-rose-100"
-            }`}
-          >
-            ✗ Missed ({incorrectCount})
+            <span>📥</span>
+            <span>Download PDF</span>
           </button>
         </div>
       </div>

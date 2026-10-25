@@ -8,6 +8,7 @@ import { QuestionReview } from "@/components/QuestionReview";
 import { ResultsPodium } from "@/components/ResultsPodium";
 import { useAuth } from "@/lib/auth-context";
 import { rankPlayers } from "@/lib/scoring";
+import { downloadQuizPdf } from "@/lib/pdf-generator";
 import { useRoomByCode } from "@/lib/use-room";
 import { recordGroupQuizFinish } from "@/lib/user-profile";
 
@@ -69,11 +70,36 @@ function ResultsInner() {
       <ResultsPodium players={players} startedAt={room.startedAt} currentUid={user?.uid} />
 
       {quiz && myPlayer?.finishedAt ? (
-        <QuestionReview questions={quiz.questions} answers={myPlayer.answers ?? {}} />
+        <QuestionReview
+          questions={quiz.questions}
+          answers={myPlayer.answers ?? {}}
+          quizTitle={room.title}
+          playerName={myPlayer.displayName || user?.displayName || "Player"}
+        />
       ) : null}
 
-      <div className="text-center pt-2">
-        <Link href="/home" className="inline-block rounded-full bg-french px-6 py-3 font-extrabold text-white shadow-bubble">
+      <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+        {quiz && myPlayer?.finishedAt ? (
+          <button
+            type="button"
+            onClick={() =>
+              downloadQuizPdf({
+                quizTitle: room.title,
+                playerName: myPlayer.displayName || user?.displayName || "Player",
+                questions: quiz.questions,
+                answers: myPlayer.answers ?? {},
+              })
+            }
+            className="inline-flex items-center gap-2 rounded-full border-2 border-french/25 bg-white px-5 sm:px-6 py-2.5 sm:py-3 font-extrabold text-french shadow-card transition hover:-translate-y-0.5 hover:bg-french hover:text-white active:translate-y-0 cursor-pointer text-sm sm:text-base"
+          >
+            <span>📥</span>
+            <span>Download Quiz PDF</span>
+          </button>
+        ) : null}
+        <Link
+          href="/home"
+          className="inline-block rounded-full bg-french px-5 sm:px-6 py-2.5 sm:py-3 font-extrabold text-white shadow-bubble transition hover:-translate-y-0.5 active:translate-y-0 text-sm sm:text-base"
+        >
           Back home
         </Link>
       </div>

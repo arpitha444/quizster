@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateQuizWithGroq, sanitizeQuestions } from "./groq";
 import type { QuizQuestion } from "./types";
 
 const PRIMARY_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
@@ -32,65 +33,26 @@ type GeminiPayload = {
   }>;
 };
 
-function asType(value: string | undefined): QuizQuestion["type"] | null {
-  if (value === "mcq" || value === "tf" || value === "blank") return value;
-  return null;
-}
-
-function sanitizeQuestions(raw: GeminiPayload["questions"], count: number): QuizQuestion[] {
-  const questions: QuizQuestion[] = [];
-  for (const item of raw ?? []) {
-    const type = asType(item.type);
-    const prompt = item.prompt?.trim();
-    const answer = String(item.answer ?? "").trim();
-    if (!type || !prompt || !answer) continue;
-
-    if (type === "mcq") {
-      const options = (item.options ?? []).map((option) => String(option).trim()).filter(Boolean);
-      if (options.length < 2 || !options.includes(answer)) continue;
-      questions.push({
-        id: crypto.randomUUID(),
-        type,
-        prompt,
-        options: options.slice(0, 4),
-        answer,
-      });
-    } else if (type === "tf") {
-      const normalized = /^(true|false)$/i.test(answer) ? (answer.toLowerCase() === "true" ? "True" : "False") : null;
-      if (!normalized) continue;
-      questions.push({
-        id: crypto.randomUUID(),
-        type,
-        prompt,
-        options: ["True", "False"],
-        answer: normalized,
-      });
-    } else {
-      questions.push({
-        id: crypto.randomUUID(),
-        type,
-        prompt,
-        answer,
-      });
-    }
-
-    if (questions.length >= count) break;
-  }
-  return questions;
-}
-
 export async function generateQuizFromPdf(pdfBytes: Buffer, questionCount: number): Promise<{
   title: string;
   questions: QuizQuestion[];
 }> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Missing GEMINI_API_KEY. Add it to .env.local.");
+  // If Gemini API key is missing but Groq is available, go straight to Groq
+  if (!process.env.GEMINI_API_KEY && process.env.GROQ_API_KEY) {
+    console.info("[Quizster] GEMINI_API_KEY not configured. Generating with Groq API...");
+    return generateQuizWithGroq(pdfBytes, questionCount);
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
+  // Attempt Gemini generation first
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("Missing GEMINI_API_KEY. Add it to .env.local.");
+    }
 
-  const prompt = `You create quizzes for college students from study notes.
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    const prompt = `You create quizzes for college students from study notes.
 
 Return JSON only with this shape:
 {
@@ -114,75 +76,109 @@ Rules:
 - Use only facts from the PDF. Do not invent material that is not in the document.
 - Keep prompts clear and friendly for young students.`;
 
-  const modelsToTry = Array.from(new Set([PRIMARY_MODEL, FALLBACK_MODEL].filter(Boolean)));
-  let text = "";
-  let lastError: unknown = null;
+    const modelsToTry = Array.from(new Set([PRIMARY_MODEL, FALLBACK_MODEL].filter(Boolean)));
+    let text = "";
+    let lastError: unknown = null;
 
-  for (let i = 0; i < modelsToTry.length; i++) {
-    const currentModel = modelsToTry[i];
-    try {
-      const model = genAI.getGenerativeModel({
-        model: currentModel,
-        generationConfig: {
-          temperature: 0.4,
-          responseMimeType: "application/json",
-        },
-      });
-
-      const result = await model.generateContent([
-        {
-          inlineData: {
-            mimeType: "application/pdf",
-            data: pdfBytes.toString("base64"),
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const currentModel = modelsToTry[i];
+      try {
+        const model = genAI.getGenerativeModel({
+          model: currentModel,
+          generationConfig: {
+            temperature: 0.4,
+            responseMimeType: "application/json",
           },
-        },
-        { text: prompt },
-      ]);
+        });
 
-      text = result.response.text();
-      if (i > 0) {
-        console.info(
-          `[Gemini] High demand on primary model. Successfully generated quiz using fallback model: ${currentModel}`,
+        const result = await model.generateContent([
+          {
+            inlineData: {
+              mimeType: "application/pdf",
+              data: pdfBytes.toString("base64"),
+            },
+          },
+          { text: prompt },
+        ]);
+
+        text = result.response.text();
+        if (i > 0) {
+          console.info(
+            `[Gemini] High demand on primary model. Successfully generated quiz using fallback model: ${currentModel}`,
+          );
+        }
+        break;
+      } catch (err) {
+        lastError = err;
+        const isDemand = isHighDemandError(err);
+        const hasNext = i < modelsToTry.length - 1;
+
+        if (isDemand && hasNext) {
+          const nextModel = modelsToTry[i + 1];
+          console.warn(
+            `[Gemini] Model ${currentModel} is experiencing high demand (503/429). Automatically switching to ${nextModel}...`,
+          );
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!text && lastError) {
+      throw lastError;
+    }
+
+    let parsed: GeminiPayload;
+    try {
+      parsed = JSON.parse(text) as GeminiPayload;
+    } catch {
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) {
+        throw new Error("Gemini did not return valid quiz JSON.");
+      }
+      parsed = JSON.parse(match[0]) as GeminiPayload;
+    }
+
+    const questions = sanitizeQuestions(parsed.questions, questionCount);
+    if (questions.length < Math.min(3, questionCount)) {
+      throw new Error("Not enough usable questions were generated. Try a clearer PDF.");
+    }
+
+    return {
+      title: parsed.title?.trim() || "Quizster Quiz",
+      questions,
+    };
+  } catch (geminiError) {
+    const errorMsg = geminiError instanceof Error ? geminiError.message : String(geminiError);
+    console.warn(`[Gemini] Encountered error: "${errorMsg}". Checking for Groq fallback...`);
+
+    // In case of ANY error with Gemini (high demand, rate limit, parse error, network error, etc.):
+    // Automatically fall back to Groq if GROQ_API_KEY is configured
+    if (process.env.GROQ_API_KEY) {
+      console.info("[Quizster] Seamlessly falling back to Groq API (llama-3.3-70b-versatile)...");
+      try {
+        return await generateQuizWithGroq(pdfBytes, questionCount);
+      } catch (groqError) {
+        console.error("[Groq] Fallback also failed:", groqError);
+        const groqMsg = groqError instanceof Error ? groqError.message : String(groqError);
+        throw new Error(
+          `Quiz generation failed on both Gemini and Groq. Gemini: ${errorMsg}. Groq: ${groqMsg}`,
         );
       }
-      break;
-    } catch (err) {
-      lastError = err;
-      const isDemand = isHighDemandError(err);
-      const hasNext = i < modelsToTry.length - 1;
-
-      if (isDemand && hasNext) {
-        const nextModel = modelsToTry[i + 1];
-        console.warn(
-          `[Gemini] Model ${currentModel} is experiencing high demand (503/429). Automatically switching to ${nextModel}...`,
-        );
-        continue;
-      }
-      throw err;
     }
-  }
 
-  if (!text && lastError) {
-    throw lastError;
-  }
-  let parsed: GeminiPayload;
-  try {
-    parsed = JSON.parse(text) as GeminiPayload;
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) {
-      throw new Error("Gemini did not return valid quiz JSON.");
+    // If Groq is not configured, format Gemini error
+    if (
+      errorMsg.includes("503") ||
+      errorMsg.includes("high demand") ||
+      errorMsg.includes("Service Unavailable") ||
+      errorMsg.includes("spikes in demand")
+    ) {
+      throw new Error(
+        "Gemini servers are currently experiencing high demand. Please add GROQ_API_KEY to .env.local to enable automatic instant fallback.",
+      );
     }
-    parsed = JSON.parse(match[0]) as GeminiPayload;
-  }
 
-  const questions = sanitizeQuestions(parsed.questions, questionCount);
-  if (questions.length < Math.min(3, questionCount)) {
-    throw new Error("Not enough usable questions were generated. Try a clearer PDF.");
+    throw geminiError;
   }
-
-  return {
-    title: parsed.title?.trim() || "Quizster Quiz",
-    questions,
-  };
 }

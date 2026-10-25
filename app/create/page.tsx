@@ -56,7 +56,7 @@ function CreateInner() {
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-midnight">Make a quiz from a PDF</h1>
         <p className="mt-1.5 sm:mt-2 text-sm sm:text-base font-semibold text-midnight/70">
-          Gemini Flash reads your notes and writes a mixed set of questions.
+          AI reads your notes and writes a mixed set of questions.
         </p>
       </div>
       <PdfDropzone file={file} onFile={setFile} />
